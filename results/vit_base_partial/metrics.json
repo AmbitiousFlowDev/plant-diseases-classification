@@ -1,0 +1,14 @@
+{
+  "accuracy": 0.9761352336758369,
+  "precision": 0.9836778615971615,
+  "recall": 0.9800083136781742,
+  "f1": 0.9815274364690934,
+  "auc": 0.9997172454566781,
+  "params_total": 85814805,
+  "params_trainable": 42544917,
+  "model": "vit_base_patch16_224.augreg2_in21k_ft_in1k",
+  "strategy": "partial",
+  "training_time_s": 1302.9,
+  "epochs_run": 10,
+  "best_epoch": 5
+}

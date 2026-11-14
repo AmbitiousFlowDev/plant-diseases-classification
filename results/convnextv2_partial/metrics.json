@@ -1,0 +1,14 @@
+{
+  "accuracy": 0.9809413324494531,
+  "precision": 0.9852782600472606,
+  "recall": 0.9852056908546484,
+  "f1": 0.9852216811196487,
+  "auc": 0.9996282233404775,
+  "params_total": 27882645,
+  "params_trainable": 26641557,
+  "training_time_s": 2197.6,
+  "epochs_run": 9,
+  "best_epoch": 4,
+  "model": "convnextv2_tiny.fcmae_ft_in22k_in1k",
+  "strategy": "partial"
+}

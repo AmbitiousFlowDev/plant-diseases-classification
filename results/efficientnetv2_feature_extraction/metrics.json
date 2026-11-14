@@ -6,9 +6,9 @@
   "auc": 0.9985820356646942,
   "params_total": 20204389,
   "params_trainable": 26901,
-  "training_time_s": 1129.6,
-  "epochs_run": 15,
-  "best_epoch": 12,
   "model": "tf_efficientnetv2_s",
-  "strategy": "feature_extraction"
+  "strategy": "feature_extraction",
+  "training_time_s": 1363.9,
+  "epochs_run": 15,
+  "best_epoch": 12
 }

@@ -1,0 +1,14 @@
+{
+  "accuracy": 0.9663573085846868,
+  "precision": 0.9733301827565981,
+  "recall": 0.9740162746496969,
+  "f1": 0.9736379999793741,
+  "auc": 0.9992650008992346,
+  "params_total": 20204389,
+  "params_trainable": 18382813,
+  "model": "tf_efficientnetv2_s",
+  "strategy": "partial",
+  "training_time_s": 1463.5,
+  "epochs_run": 12,
+  "best_epoch": 7
+}

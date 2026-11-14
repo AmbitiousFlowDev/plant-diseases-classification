@@ -2,9 +2,11 @@
 seed: 42
 img_size: 224
 batch_size: 32
-epochs: 30
+epochs: 15
 optimizer: adam
 lr_feature_extraction: 1.0e-3
 lr_finetune: 1.0e-5
 early_stopping_patience: 5
 split: {train: 0.70, val: 0.15, test: 0.15}
+early_stopping_patience: 5
+early_stopping_min_delta: 0.001

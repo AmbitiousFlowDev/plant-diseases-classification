@@ -1,5 +1,4 @@
 --extra-index-url https://download.pytorch.org/whl/cu128
-
 torch
 torchvision
 timm
@@ -11,3 +10,4 @@ pyyaml
 grad-cam
 kagglehub
 jupyter
+mlflow

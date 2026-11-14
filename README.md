@@ -1,4 +1,4 @@
- <div align="center">
+<div align="center">
 
 # Transfer Learning for Plant Disease Detection
 
@@ -9,9 +9,9 @@
 ![Course](https://img.shields.io/badge/Course-Deep%20Learning-blue)
 ![Program](https://img.shields.io/badge/Master-ISI%20S3-green)
 ![Year](https://img.shields.io/badge/Academic%20Year-2026--2027-green)
-![Framework](https://img.shields.io/badge/TensorFlow%20%2B%20Keras%203-orange)
+![Framework](https://img.shields.io/badge/PyTorch%20%2B%20timm-orange)
+![Tracking](https://img.shields.io/badge/Tracking-MLflow-lightgrey)
 ![Status](https://img.shields.io/badge/Status-In%20Progress-yellow)
-![Quality Gate](https://img.shields.io/badge/Quality%20Gate-SonarQube-lightgrey)
 
 Département d'Informatique · Faculté des Sciences Semlalia, Université Cadi Ayyad, Marrakech
 
@@ -23,318 +23,195 @@ Supervised by **Pr. Mustapha AATILA**
 
 ## Overview
 
-Plant diseases inflict significant agricultural losses globally. Traditional manual diagnosis is labor-intensive, subjective, and difficult to scale. While Convolutional Neural Networks (CNNs) offer a promising automated solution, they typically require massive annotated datasets—a resource often scarce in agricultural domains.
-
-This study investigates the following research question:
+Plant diseases cause significant agricultural losses, and manual diagnosis is slow, subjective and hard to scale. This project asks:
 
 > **To what extent can Transfer Learning enhance plant disease classification, and which combination of architecture and adaptation strategy yields the optimal balance of accuracy, computational efficiency, and robustness?**
 
-This project evaluates modern pre-trained architectures against a baseline CNN trained from scratch. To ensure scientific rigor, all models are evaluated under strictly identical training conditions, and model predictions are interpreted using Gradient-weighted Class Activation Mapping (Grad-CAM).
+Pre-trained ImageNet backbones are adapted to a 21-class leaf-disease dataset with three strategies of increasing depth. Every model is trained under the same hyperparameters, data splits and training loop, so differences come from the architecture and the strategy alone.
 
-## Contributions
+### Progress
 
-- A systematic comparison of state-of-the-art pre-trained architectures, encompassing both CNNs and Vision Transformers.
-- An empirical study on the impact of fine-tuning depth across three distinct adaptation strategies.
-- Comprehensive performance analysis across multiple plant disease classifications.
-- Enhanced model interpretability through Grad-CAM visualizations.
-
-## Experimental Design
-
-| Axis | Configuration |
+| Item | Status |
 |---|---|
-| **Models** | EfficientNetV2 · MobileNetV4 · ConvNeXtV2 · ViT-Base (Transformer) · Baseline CNN (trained from scratch) |
-| **Adaptation Strategies** | Feature Extraction (frozen backbone) · Partial Fine-Tuning (unfreezing terminal blocks) · Full Fine-Tuning |
-| **Dataset** | [Plant Leaf Diseases (Kaggle)](https://www.kaggle.com/datasets/moazawadali/plant-leaf-diseases) |
-| **Evaluation Metrics** | Accuracy · Precision · Recall · F1-score · ROC / AUC · Confusion Matrix · Parameter Count · Training Duration |
-| **Validation Method** | Train / Validation / Test stratification supplemented by k-fold cross-validation |
-| **Explainability** | Grad-CAM (identifying diseased regions and detected morphological symptoms) |
+| Dataset download, validation, stratified split | ✅ Done — [`01_data_and_preprocessing.ipynb`](notebooks/01_data_and_preprocessing.ipynb) |
+| EfficientNetV2-S × 3 strategies | ✅ Done — [`02_efficientnetv2_strategies_classification.ipynb`](notebooks/02_efficientnetv2_strategies_classification.ipynb) |
+| ConvNeXtV2-Tiny × 3 strategies | ✅ Done — [`03_convnextv2_strategies_classification.ipynb`](notebooks/03_convnextv2_strategies_classification.ipynb) |
+| ViT-Base/16 × 3 strategies | ✅ Done — [`04_vit_base_strategies_classification.ipynb`](notebooks/04_vit_base_strategies_classification.ipynb) |
+| MobileNetV4 × 3 strategies | ⏳ Pending |
+| Baseline CNN trained from scratch | ⏳ Pending |
+| Grad-CAM interpretability | ⏳ Pending (`grad-cam` is already in `requirements.txt`) |
+| Efficiency benchmarks, robustness tests, multi-seed runs | ⏳ Pending |
+| Paper | 🚧 Draft in [`paper/`](paper/) |
 
-> **Methodological Note:** All architectures are trained under identical hyperparameters (optimizer, learning rate, batch size, epoch count, data augmentation, and random seed) to guarantee a controlled and fair comparative analysis.
+## Dataset
 
-## Technical Architecture and Methodology
+[Plant Leaf Diseases](https://www.kaggle.com/datasets/moazawadali/plant-leaf-diseases) (Kaggle, `moazawadali/plant-leaf-diseases`, version 3), downloaded with `kagglehub`.
 
-| Component | Technology Selection | Methodological Rationale |
-|---|---|---|
-| **Deep Learning Framework** | **TensorFlow 2 + Keras 3**, utilizing **KerasHub** (`keras-hub`) for pre-trained backbones | Keras callbacks facilitate a streamlined training loop; `tf.data` ensures optimized, high-throughput input pipelines. |
-| **Computational Optimization** | `tf.data` (`cache`, `prefetch(AUTOTUNE)`), Keras mixed precision, XLA compilation (`jit_compile=True`) | Maximizes GPU utilization on constrained platforms (Google Colab/Kaggle), enabling comprehensive multi-run experiments. |
-| **Data Processing & Augmentation** | `tf.data` + Keras preprocessing layers (`RandomFlip`, `RandomRotation`, `RandomZoom`, `RandomContrast`), scikit-learn (`StratifiedKFold`) | In-pipeline GPU-accelerated augmentation. Stratified splits ensure statistically representative cross-validation. |
-| **Model Interpretability** | Grad-CAM implemented via `tf.GradientTape` | Provides verifiable symptom localization for CNNs. For ViT-Base, terminal transformer block patch tokens are reshaped into a spatial grid. |
-| **Experiment Tracking** | Localized directory logging (`results/<run>/` containing `config.yaml`, `history.csv`, `metrics.json`) | Ensures self-contained, reproducible experiment logs without relying on external telemetry servers. |
-| **Data Versioning** | **DVC** (Data Version Control) | Maintains a reproducible dataset and split manifest without bloating the version control repository with raw images. |
-| **Configuration Management** | YAML + OmegaConf/Hydra | A unified `base.yaml` configuration enforces identical training parameters across all architectural variations. |
-| **Demonstration Application** | **Gradio** deployed via Hugging Face Spaces | Provides an interactive interface for inference and real-time Grad-CAM overlay visualization. |
-| **Model Exportation** | **TensorFlow Lite** (incorporating post-training quantization) | Evaluates deployment feasibility for mobile and edge devices by measuring true inference latency and memory footprint. |
-| **Code Quality Assurance** | **SonarQube** | Automates static code analysis, ensuring security, maintainability, and standard compliance prior to academic submission. |
+- **40,223 images, 21 classes, 4 crops:** Corn (4 classes), Grape (4), Potato (3), Tomato (10).
+- **Imbalance:** from 1,000 images (Potato Early Blight, Potato Late Blight) to 3,235 (Tomato Late Blight), a 3.2 : 1 ratio.
+- **Split:** stratified 70 / 15 / 15 with seed 42, after removing unreadable files. The split is saved once in [`data/splits/`](data/splits/) and reused by every model.
 
-### Pre-trained Model Availability (TensorFlow/Keras Ecosystem)
+| Split | Images |
+|---|---|
+| Train | 28,156 |
+| Validation | 6,033 |
+| Test | 6,034 |
 
-| Architecture | Source Framework | Verification Status |
-|---|---|---|
-| **EfficientNetV2** | `keras.applications` or KerasHub presets | Official Support |
-| **ViT-Base** | KerasHub (`vit_base_patch16_224_imagenet`) | Official Support |
-| **ConvNeXtV2** | In-repo Keras 3 port ([`src/convnextv2.py`](src/convnextv2.py)) loading timm's `convnextv2_tiny.fcmae_ft_in1k` weights | Validated: features and logits match timm within 1e-3 ([`tests/test_convnextv2.py`](tests/test_convnextv2.py)) |
-| **MobileNetV4** | Currently unavailable natively in TensorFlow/Keras | See fallback protocol below |
+Per-class counts are in [`results/split_counts.csv`](results/split_counts.csv).
 
-> **ConvNeXtV2 weights licence:** the official FAIR ConvNeXtV2 checkpoints are released under **CC-BY-NC-4.0** (non-commercial use only), which covers this academic study and a non-commercial demo.
+![Class distribution per split](results/figures/split_class_counts.png)
 
-> **Fallback Protocol for MobileNetV4:** Should MobileNetV4 weights remain unavailable in the TensorFlow ecosystem, **MobileNetV3-Large** will be substituted as the representative lightweight architecture. This substitution will be explicitly documented in the final manuscript.
+## Method
 
-### Methodological Safeguards for Comparative Rigor
+### Models
 
-- **Data Leakage Prevention:** Perceptual hashing is applied prior to dataset splitting to ensure augmented variations of identical samples do not cross-contaminate training, validation, and testing sets.
-- **Controlled Comparisons:** Standardized input dimensions (224 × 224), deterministic seeding, and uniform augmentation parameters are enforced. Learning rates are independently optimized per architecture via a controlled hyperparameter sweep.
-- **Strategy Definitions:**
-  - *Feature Extraction:* Backbone frozen; BatchNorm layers locked in inference mode (`training=False`).
-  - *Partial Fine-Tuning:* Terminal stages unfrozen (consistent proportional depth across models).
-  - *Full Fine-Tuning:* All parameters set to trainable.
-- **Statistical Significance:** Results are reported as mean ± standard deviation across multiple seeds. McNemar's test is applied to assess significance between top-performing models.
-- **Class Imbalance Handling:** Evaluation prioritizes macro-F1 scores and per-class recall over aggregate accuracy.
-- **Robustness Testing:** Accuracy is evaluated against synthetic corruptions (Gaussian blur, noise, contrast shifts) and out-of-distribution (OOD) field-condition imagery.
+All backbones come from [timm](https://github.com/huggingface/pytorch-image-models) with ImageNet-pretrained weights. The original classifier is replaced by a new 21-class linear head.
 
-## Code Quality and Security Audit
+| Model | timm checkpoint | Parameters | Pre-training |
+|---|---|---|---|
+| EfficientNetV2-S | `tf_efficientnetv2_s` | 20.2M | ImageNet-1k |
+| ConvNeXtV2-Tiny | `convnextv2_tiny.fcmae_ft_in22k_in1k` | 27.9M | FCMAE, ImageNet-22k → 1k |
+| ViT-Base/16 | `vit_base_patch16_224.augreg2_in21k_ft_in1k` | 85.8M | ImageNet-21k → 1k |
 
-This repository is subject to rigorous static analysis using **SonarQube** to ensure code maintainability and security. The quality gate must indicate a passing status prior to the final academic submission.
+### Adaptation strategies
 
-### Quality Gate Criteria
+| Strategy | What trains | EfficientNetV2-S | ConvNeXtV2-T | ViT-B/16 |
+|---|---|---|---|---|
+| **Feature extraction** | New head only, backbone frozen | 26.9K (0.1%) | 16.1K (0.1%) | 16.1K (0.02%) |
+| **Partial fine-tuning** | Head + last part of the backbone | last 2 stages + `conv_head`/`bn2`: 18.4M (91.0%) | last 2 of 4 stages + `head.norm`: 26.6M (95.5%) | last 6 of 12 blocks + `norm`: 42.5M (49.6%) |
+| **Full fine-tuning** | Everything | 20.2M (100%) | 27.9M (100%) | 85.8M (100%) |
 
-```text
-SonarQube Quality Gate Requirements (New Code):
+Frozen BatchNorm layers are kept in inference mode so their running statistics do not change. ConvNeXt and ViT use LayerNorm, which has no running statistics.
 
-- 0 Blocker or Critical issues
-- 0 Unreviewed Security Hotspots
-- Code Duplication < 3%
-```
+### Shared training conditions
 
-### Security and Best Practices
+Every run reads the same [`configs/base.yaml`](configs/base.yaml) and uses the same training code.
 
-- **Credential Management:** API tokens (Kaggle, Hugging Face) are strictly managed via environment variables and never committed to the repository.
-- **Notebook Sanitization:** All Jupyter notebook outputs are stripped prior to version control (`nbstripout`) to prevent inadvertent data or path leakage.
-- **Model Security:** Model checkpoints are saved in the secure `.keras` format.
-- **Dependency Management:** All libraries are strictly pinned within a lockfile to ensure reproducible execution environments.
+| Setting | Value |
+|---|---|
+| Input size | 224 × 224 (resize) |
+| Normalization | The backbone's own pre-training mean/std (0.5/0.5 for EfficientNetV2 and ViT, ImageNet statistics for ConvNeXtV2) |
+| Data augmentation | None |
+| Optimizer | Adam |
+| Learning rate | 1e-3 for the new head, 1e-5 for unfrozen backbone layers |
+| Batch size | 32 |
+| Epochs | At most 15; early stopping on validation loss (patience 5, min Δ 0.001); the weights from the best epoch are restored |
+| Loss | Cross-entropy |
+| Precision | Automatic mixed precision (CUDA) |
+| Seed | 42 |
 
-## Execution Workflow
+Metrics are computed on the held-out test set. Precision, recall and F1 are macro-averaged (each class counts equally); AUC is macro one-vs-rest.
 
-The following diagram illustrates the complete experimental pipeline, from dataset ingestion to model evaluation and interpretability.
+## Results
 
-```mermaid
-flowchart TD
-    %% Dataset preparation
-    Data[("Dataset")]
-    Preproc["Pre-processing<br/>Resize and Normalize"]
-    Split{"Stratified Split<br/>Train / Validation / Test"}
-    Aug["Data Augmentation<br/>GPU-Accelerated"]
+Single seed (42), 6,034 test images. Source: [`results/summary.csv`](results/summary.csv).
 
-    %% Architecture and training
-    Strat["Architecture Selection<br/>and Adaptation Strategy"]
-    Train["Training Pipeline<br/>Cross-Validation"]
-    Eval["Evaluation and Inference"]
+| Model | Strategy | Accuracy | Precision | Recall | F1 | AUC | Trainable / total | Epochs (best) | Training time |
+|---|---|---|---|---|---|---|---|---|---|
+| EfficientNetV2-S | Feature extraction | 0.9490 | 0.9594 | 0.9598 | 0.9595 | 0.9986 | 26.9K / 20.2M | 15 (12) | 23 min |
+| EfficientNetV2-S | Partial | 0.9664 | 0.9733 | 0.9740 | 0.9736 | 0.9993 | 18.4M / 20.2M | 12 (7) | 24 min |
+| EfficientNetV2-S | Full | 0.9713 | 0.9779 | 0.9780 | 0.9779 | 0.9994 | 20.2M / 20.2M | 15 (13) | 42 min |
+| ConvNeXtV2-T | Feature extraction | 0.9572 | 0.9680 | 0.9657 | 0.9662 | 0.9988 | 16.1K / 27.9M | 15 (14) | 32 min |
+| ConvNeXtV2-T | Partial | 0.9809 | 0.9853 | 0.9852 | 0.9852 | 0.9996 | 26.6M / 27.9M | 9 (4) | 37 min |
+| ConvNeXtV2-T | **Full** | **0.9819** | **0.9858** | **0.9860** | **0.9859** | 0.9996 | 27.9M / 27.9M | 9 (4) | 88 min |
+| ViT-B/16 | Feature extraction | 0.9707 | 0.9775 | 0.9776 | 0.9774 | 0.9993 | 16.1K / 85.8M | 15 (15) | 16 min |
+| ViT-B/16 | Partial | 0.9761 | 0.9837 | 0.9800 | 0.9815 | **0.9997** | 42.5M / 85.8M | 10 (5) | 22 min |
+| ViT-B/16 | Full | 0.9808 | 0.9852 | 0.9854 | 0.9852 | **0.9997** | 85.8M / 85.8M | 9 (4) | 29 min |
 
-    %% Outputs
-    Preds(["Predictions"])
-    Metrics["Metrics and ROC/AUC"]
-    GradCAM["Grad-CAM Interpretability"]
+> **Training times are not comparable between models.** They are wall-clock times, and the runs were not all done on the same machine or with the GPU to themselves. Compare times only within one model, or re-run on a single dedicated GPU before drawing conclusions about cost.
 
-    %% Workflow connections
-    Data --> Preproc
-    Preproc --> Split
-    Split --> Aug
-    Aug --> Train
-    Strat --> Train
-    Train --> Eval
+### Observations
 
-    Eval --> Preds
-    Eval --> Metrics
-    Eval --> GradCAM
+- **Best model:** ConvNeXtV2-T with full fine-tuning: 98.19% accuracy, macro-F1 0.986, 109 errors out of 6,034. ViT-B/16 full fine-tuning is close (98.08%, 116 errors); EfficientNetV2-S full is behind (97.13%, 173 errors).
+- **Deeper adaptation always helps.** From feature extraction to full fine-tuning, accuracy rises by +2.2 points for EfficientNetV2, +2.5 for ConvNeXtV2 and +1.0 for ViT.
+- **ViT has the strongest frozen features:** 97.07% with only the head trained, ahead of the other two models' feature extraction (95.72% and 94.90%) and even EfficientNetV2's full fine-tuning. Its validation loss was still falling at epoch 15, so the 15-epoch budget limits it.
+- **Partial is almost as good as full** for ConvNeXtV2 (−0.1 points) and ViT (−0.5 points), at a lower training cost.
+- **Fine-tuned models converge fast:** most reached their best validation loss at epoch 4–7 and stopped early at epoch 9–12. EfficientNetV2 full is the exception (best epoch 13 of 15).
+- **AUC is at least 0.998 for every run,** so it barely separates the models. Macro-F1 and accuracy are the more informative metrics here.
 
-    %% Styling
-    classDef process fill:#f9f9f9,stroke:#333,stroke-width:1px,color:#222
-    classDef data fill:#e1f5fe,stroke:#0277bd,stroke-width:1px,color:#01579b
-    classDef output fill:#e8f5e9,stroke:#2e7d32,stroke-width:1px,color:#1b5e20
+### Figures
 
-    class Preproc,Split,Aug,Train,Eval process
-    class Data,Strat data
-    class Preds,Metrics,GradCAM output
-```
+<details>
+<summary>Training curves and confusion matrices</summary>
+
+**EfficientNetV2-S**
+
+![EfficientNetV2 curves](results/figures/efficientnetv2_curves.png)
+![EfficientNetV2 confusion matrices](results/figures/efficientnetv2_confusion.png)
+
+**ConvNeXtV2-T**
+
+![ConvNeXtV2 curves](results/figures/convnextv2_curves.png)
+![ConvNeXtV2 confusion matrices](results/figures/convnextv2_confusion.png)
+
+**ViT-B/16**
+
+![ViT-Base curves](results/figures/vit_base_curves.png)
+![ViT-Base confusion matrices](results/figures/vit_base_confusion.png)
+
+</details>
 
 ## Repository Structure
 
 ```text
 .
-├── README.md                 # Project documentation and execution instructions
-├── requirements.txt          # Pinned dependencies
-├── sonar-project.properties  # SonarQube configuration parameters
-├── SECURITY.md               # Vulnerability reporting guidelines
-├── configs/                  # Experiment configurations (YAML)
-│   └── base.yaml             # Shared hyperparameters
-├── data/                     # Local dataset directory (git-ignored)
+├── configs/base.yaml          # Shared hyperparameters for every model
+├── data/
+│   ├── provenance.json        # Kaggle source and download time
+│   ├── raw/                   # Dataset (git-ignored, filled by notebook 01)
+│   └── splits/                # train/val/test CSVs, class list, normalization stats
+├── notebooks/
+│   ├── 01_data_and_preprocessing.ipynb
+│   ├── 02_efficientnetv2_strategies_classification.ipynb
+│   ├── 03_convnextv2_strategies_classification.ipynb
+│   └── 04_vit_base_strategies_classification.ipynb
 ├── src/
-│   ├── datasets.py           # Data ingestion, deduplication, and augmentation pipelines
-│   ├── models.py             # Architecture initializations (KerasHub / custom CNN)
-│   ├── strategies.py         # Freezing and fine-tuning logic
-│   ├── train.py              # Primary training loop and checkpoint management
-│   ├── evaluate.py           # Metric computation and visualization
-│   ├── robustness.py         # Out-of-distribution and perturbation testing
-│   ├── benchmark.py          # Profiling (FLOPs, Latency, Memory)
-│   └── gradcam.py            # Interpretability implementations
-├── app/
-│   └── app.py                # Gradio application interface
-├── scripts/
-│   └── export_tflite.py      # Edge deployment conversion and quantization
-├── notebooks/                # Exploratory Data Analysis (EDA)
-├── results/                  # Structured experiment telemetry and logs
-├── paper/                    # Final academic manuscript and citations
-└── CONTRIBUTIONS.md          # Detailed team contribution matrix
+│   ├── datasets/              # PlantDataset and Preprocessor (resize + normalize)
+│   └── tracking.py            # MLflow setup (local SQLite store)
+├── results/
+│   ├── <model>_<strategy>/    # config_used.yaml, history.csv, metrics.json, preds.npz (+ model.pt, git-ignored)
+│   ├── figures/               # Curves, confusion matrices, dataset plots
+│   ├── split_counts.csv
+│   └── summary.csv            # One row per run
+├── mlflow.db, mlruns/         # MLflow runs and artifacts
+├── paper/                     # main.tex, references.bib
+└── requirements.txt
 ```
 
-## Setup and Execution Guide
+## Setup
 
-### Running the Notebooks on a Colab GPU from VS Code
-
-With the [Colab extension for VS Code](https://marketplace.visualstudio.com/items?itemName=Google.colab), the notebook stays on your machine but its code runs on a Google VM that cannot see your local files. The first code cell of every notebook handles this: on a Colab kernel it clones the repository into `/content/plant-disease-tl`, installs [`requirements-colab.txt`](requirements-colab.txt) and downloads the dataset ([`src/colab.py`](src/colab.py)). On a local kernel it only locates the project root.
-
-**No tokens are needed.** The repository is public, and the dataset is downloaded anonymously through `kagglehub`. Optional settings, read from environment variables or Colab Secrets:
-
-| Variable | Effect |
-|---|---|
-| `KAGGLE_API_TOKEN` | Downloads through the Kaggle CLI instead, which also records the archive SHA-256 in `data/provenance.json` |
-| `MLFLOW_TRACKING_URI` (+ `_USERNAME`, `_PASSWORD`) | Logs to a shared MLflow server, so runs outlive the VM and the whole team sees them |
-
-Never paste a token into a notebook cell, and keep local secrets in `.env` (git-ignored), not in `.env.example`.
-
-**Every session**
-
-1. Commit and **push** your changes: the Colab VM only sees what is on GitHub.
-2. Set `BRANCH` in the first cell to your branch, then run it. It prints the commit it is running.
-3. Without a remote `MLFLOW_TRACKING_URI`, `results/` and `mlflow.db` live on the VM and are deleted when the runtime is recycled, so copy them elsewhere before disconnecting.
-
-### 1. Clone the Repository
+The notebooks were run on Linux (WSL 2, Ubuntu 24.04) with Python 3.12 and an NVIDIA RTX 3070 (8 GB). Peak GPU memory for the largest run, ViT-B/16 full fine-tuning at batch 32, is about 3.5 GB.
 
 ```bash
-git clone https://github.com/<ORG_NAME>/<REPO_NAME>.git
-cd <REPO_NAME>
+git clone https://github.com/AmbitiousFlowDev/plant-diseases-classification.git
+cd plant-diseases-classification
+python3 -m venv .venv
+source .venv/bin/activate          # Windows: .venv\Scripts\activate
+pip install -r requirements.txt    # installs CUDA builds of PyTorch
 ```
 
-### 2. Initialize a Virtual Environment
+Run the notebooks in order:
+
+1. **`01_data_and_preprocessing.ipynb`** downloads the dataset into `data/raw/` (`kagglehub`, no token needed), validates it, writes the splits and normalization statistics, and logs a data run to MLflow.
+2. **`02`, `03`, `04`** each train one model with the three strategies. Each writes `results/<model>_<strategy>/`, adds its rows to `results/summary.csv`, saves its figures, and logs every run to MLflow.
+
+### Experiment tracking
+
+Runs are logged to a local MLflow store (`mlflow.db`, artifacts in `mlruns/`) under the experiment `plant-disease-transfer-learning`. To browse them:
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate
+mlflow ui --backend-store-uri sqlite:///mlflow.db
 ```
 
-For Windows:
+`src/tracking.py` points the experiment's artifact folder at the current checkout on every start. This is needed because `mlflow.db` is committed and would otherwise contain another machine's absolute paths.
 
-```powershell
-python -m venv .venv
-.venv\Scripts\activate
-```
+## Limitations
 
-### 3. Install Required Dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-### 4. Ingest the Dataset
-
-Requires Kaggle API credentials.
-
-```bash
-kaggle datasets download -d moazawadali/plant-leaf-diseases -p data/ --unzip
-```
-
-### 5. Execute an Experimental Training Run
-
-```bash
-python -m src.train --config configs/base.yaml \
-    --model efficientnetv2 \
-    --strategy partial_ft
-```
-
-Available strategies:
-
-- `feature_extraction`
-- `partial_ft`
-- `full_ft`
-
-### 6. Evaluate Model Performance and Generate Visualizations
-
-```bash
-python -m src.evaluate --run results/efficientnetv2_partial_ft
-```
-
-### 7. Generate Grad-CAM Interpretability Maps
-
-```bash
-python -m src.gradcam --run results/efficientnetv2_partial_ft --n 12
-```
-
-### 8. Conduct Benchmarking and Robustness Evaluations
-
-```bash
-python -m src.benchmark --run results/efficientnetv2_partial_ft
-
-python -m src.robustness --run results/efficientnetv2_partial_ft
-```
-
-## Empirical Results
-
-*Status: ConvNeXtV2 complete (single seed). The other architectures are pending; EfficientNetV2 is being re-run on the cleaned dataset. Tables are updated as experiments conclude.*
-
-**Setup.** Cleaned dataset of 34,481 images (21 classes) after removing 420 images from near-duplicate groups with conflicting labels and 5,322 redundant near-duplicates; group-stratified split of 24,135 train / 5,172 validation / 5,174 test images. Seed 42, mixed precision, hyperparameters from [`configs/base.yaml`](configs/base.yaml), trained on an NVIDIA RTX 3070 (8 GB). All metrics are computed on the held-out test set; precision, recall and F1 are macro-averaged, AUC is macro one-vs-rest.
-
-### Classification Performance
-
-| Architecture | Strategy | Accuracy | Precision | Recall | F1-Score | AUC | Trainable / Total Params | Epochs | Training Duration |
-|---|---|---|---|---|---|---|---|---|---|
-| Baseline CNN | From scratch | – | – | – | – | – | – | – | – |
-| EfficientNetV2 | All strategies | – | – | – | – | – | – | – | – |
-| MobileNetV4 | All strategies | – | – | – | – | – | – | – | – |
-| ConvNeXtV2-T | Feature extraction | 0.8846 | 0.8953 | 0.9077 | 0.8989 | 0.9950 | 17.7K / 27.9M | 15 † | 11 min |
-| ConvNeXtV2-T | Partial fine-tuning | 0.9718 | 0.9742 | 0.9755 | 0.9746 | 0.9997 | 7.1M / 27.9M | 30 † | 25 min |
-| ConvNeXtV2-T | **Full fine-tuning** | **0.9867** | **0.9855** | **0.9877** | **0.9865** | **0.9997** | 27.9M / 27.9M | 18 | 35 min |
-| ViT-Base | All strategies | – | – | – | – | – | – | – | – |
-
-† Reached the epoch budget for that strategy without early stopping, so further training might still improve it; the budget is identical across architectures.
-
-**ConvNeXtV2 observations.** Adaptation depth drives performance: test macro-F1 rises from 0.899 with a frozen backbone to 0.975 when the last 25% of parameters are tuned, and to 0.987 with full fine-tuning. Calibration improves in the same order (expected calibration error 0.035 → 0.013 → 0.010), and top-3 accuracy reaches 0.999 with full fine-tuning. Full fine-tuning costs about 3× the training time of feature extraction and early-stopped after 18 of 40 epochs.
-
-### Computational Efficiency and Robustness
-
-| Architecture | FLOPs | CPU Latency (ms) | TFLite Footprint (MB) | Perturbation Accuracy (Blur/Noise) | OOD Accuracy |
-|---|---|---|---|---|---|
-| EfficientNetV2 | – | – | – | – | – |
-| MobileNetV4 | – | – | – | – | – |
-| ConvNeXtV2 | – | – | – | – | – |
-| ViT-Base | – | – | – | – | – |
-
-## Interpretability
-
-Grad-CAM analysis is applied to validate that the models' predictive capabilities are grounded in legitimate botanical pathology (e.g., lesions, chlorosis) rather than spurious background artifacts or systemic biases within the dataset.
-
-## Interactive Demonstration
-
-A web-based interface (hosted via Hugging Face Spaces) has been developed to allow external validation of the models.
-
-The application processes uploaded botanical imagery to output:
-
-- Disease classifications.
-- Confidence distributions.
-- Corresponding Grad-CAM spatial heatmaps.
-
-*Link to be provided upon deployment.*
-
-## Limitations and Future Work
-
-- **Current Limitations:** The primary dataset relies heavily on controlled-environment imagery, which may constrain generalization to in-situ agricultural contexts.
-- **Future Perspectives:** Subsequent research should explore multimodal data integration (e.g., environmental sensors alongside optical data), deployment optimization for low-power edge devices, and real-time drone-based inference pipelines.
-
-## Deliverables Checklist
-
-- [ ] Original codebase and implementation.
-- [ ] Documented version control repository adhering to standard formatting and security practices.
-- [ ] Passing SonarQube quality gate.
-- [ ] Academic manuscript formatted to program specifications.
-- [ ] Itemized team contribution matrix.
+- **No near-duplicate filtering.** The splits are stratified by class but not checked for near-duplicate images. This Kaggle dataset contains near-duplicates, so some test images may closely resemble training images and test accuracy may be optimistic.
+- **Single seed.** Each configuration was trained once; differences below about 0.5 points may not be significant.
+- **One shared recipe.** Plain Adam with no augmentation, warmup or weight decay is fair across models but not optimal for each. ViT in particular usually benefits from AdamW, warmup and augmentation.
+- **Partial fine-tuning is not equally deep.** It trains 91–95% of the parameters for the two CNNs but 50% for ViT, because ViT's blocks are all the same size.
+- **Controlled imagery.** Most images are lab-style leaf photos, which may not generalize to field conditions.
 
 ## Research Team
 
@@ -347,7 +224,7 @@ The application processes uploaded botanical imagery to output:
 
 ## References
 
-*The complete bibliography is maintained within `paper/references.bib` using standard academic citation formats.*
+The bibliography is in [`paper/references.bib`](paper/references.bib).
 
 ---
 

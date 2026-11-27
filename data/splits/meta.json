@@ -22,5 +22,5 @@
     "Tomato___Target_Spot",
     "Tomato___Yellow_Leaf_Curl_Virus"
   ],
-  "data_root": "/home/ambitiousflow/projects/plant-diseases-classification/data/raw/plant-leaf-diseases/Plant_Leaf_Diseases"
+  "data_root": "/home/achiban/plant-diseases-classification/data/raw/plant-leaf-diseases/Plant_Leaf_Diseases"
 }

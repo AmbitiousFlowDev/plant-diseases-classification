@@ -1,0 +1,15 @@
+batch_size: 32
+early_stopping_min_delta: 0.001
+early_stopping_patience: 5
+epochs: 15
+img_size: 224
+lr_feature_extraction: 0.001
+lr_finetune: 1.0e-05
+optimizer: adam
+partial_blocks: 2
+seed: 42
+split:
+  test: 0.15
+  train: 0.7
+  val: 0.15
+strategy: partial

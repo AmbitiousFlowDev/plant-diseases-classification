@@ -1,0 +1,14 @@
+{
+  "accuracy": 0.9647000331455088,
+  "precision": 0.9713948463258524,
+  "recall": 0.973025949799986,
+  "f1": 0.9720883821279849,
+  "auc": 0.9992810915552859,
+  "params_total": 4228933,
+  "params_trainable": 4228933,
+  "model": "mobilenetv3_large_100.ra_in1k",
+  "strategy": "full",
+  "training_time_s": 995.9,
+  "epochs_run": 13,
+  "best_epoch": 8
+}
